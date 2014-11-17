@@ -101,13 +101,12 @@ suppressMessages(print(hist))
 train_tr[, num_vars] = data.frame(lapply(train_tr[, num_vars],
                                          function(x) x + 1))
 
-# boxcox
+# boxcox transformation
 bc = preProcess(train_tr[, num_vars], method = 'BoxCox')
-train_tr_num_bc = predict(bc, train_tr[, num_vars])
+train_tr[, num_vars] = predict(bc, train_tr[, num_vars])
 
 # plot again
-train_tr_num_bc$rating = train_tr$rating
-train_num_2 = train_tr_num_bc %>%
+train_num_2 = train_tr[, c('rating', num_vars)] %>%
   melt(id = 'rating')
 
 hist_2 = ggplot(train_num_2, aes(x = value)) + 
@@ -144,7 +143,7 @@ ctrl = trainControl(method = 'cv', number = 10, classProbs = T,
 # logistic regression
 set.seed(2014)
 logit_m = train(x = train_tr_m, y = rating_tr,
-                method = 'glm', preProcess = c('center', 'scale', 'BoxCox'),
+                method = 'glm', family = 'binomial',
                 metric = 'ROC', trControl = ctrl)
 logit_m
 coefplot(logit_m)
@@ -153,7 +152,7 @@ coefplot(logit_m)
 set.seed(2014)
 svm_g = expand.grid(sigma = .0638, C = seq(1, 5, 1))
 svm_m = train(x = train_tr_m, y = rating_tr,
-              method = 'svmRadial', preProcess = c('center', 'scale', 'BoxCox'),
+              method = 'svmRadial', preProcess = c('center', 'scale'),
               metric = 'ROC', trControl = ctrl, tuneGrid = svm_g)
 svm_m
 
@@ -169,7 +168,7 @@ set.seed(2014)
 gbm_g = expand.grid(n.trees = seq(100, 300, 50), interaction.depth = 1:3, 
                     shrinkage = c(.01, .1))
 gbm_m = train(x = train_tr_m, y = rating_tr,
-              method = 'gbm', preProcess = c('center', 'scale', 'BoxCox'),
+              method = 'gbm', preProcess = c('center', 'scale'),
               metric = 'ROC', trControl = ctrl, tuneGrid = gbm_g, verbose = F)
 gbm_m
 
@@ -189,6 +188,9 @@ levels(train_te$v_9) = c('0', rep('1', 6))
 train_te[, num_vars] = data.frame(lapply(train_te[, num_vars],
                                          function(x) x + 1))
 
+# boxcox transformation
+train_te[, num_vars] = predict(bc, train_te[, num_vars])
+
 # convert to model matrix
 rating_te = train_te$rating
 train_te_m = model.matrix(rating ~ ., data = train_te)[, -1]
@@ -200,7 +202,7 @@ gbm_f = predict(gbm_m, train_te_m, type = 'prob')
 
 mean_f = (rf_f$up + gbm_f$up) / 2
 roc_te = roc(rating_te, mean_f)
-plot(roc_te) # .9018
+plot(roc_te) # .9017
 
 # apply to the real test set (the remaining rows in the file)
 test = read.table('input00.txt', sep = ' ', skip = 4502)
@@ -223,6 +225,9 @@ levels(test$v_9) = c('0', rep('1', 5))
 test[, num_vars] = data.frame(lapply(test[, num_vars],
                                      function(x) x + 1))
 
+# boxcox transformation
+test[, num_vars] = predict(bc, test[, num_vars])
+
 # convert to model matrix
 test_m = model.matrix(~ ., data = test)[, -1]
 test_m = test_m[, final_vars]
@@ -240,4 +245,4 @@ levels(test_rating) = list('down' = -1, 'up' = 1)
 
 # roc
 roc_test = roc(test_rating, mean_f_test)
-plot(roc_test) # .8974
+plot(roc_test) # .8972
