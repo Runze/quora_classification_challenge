@@ -54,7 +54,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 <div id="header">
 <h1 class="title">quora_classification_challenge.R</h1>
 <h4 class="author"><em>Runze</em></h4>
-<h4 class="date"><em>Sun Nov 16 14:54:37 2014</em></h4>
+<h4 class="date"><em>Sun Nov 16 17:23:17 2014</em></h4>
 </div>
 
 
@@ -416,8 +416,8 @@ set.seed(2014)
 gbm_g = expand.grid(n.trees = seq(100, 300, 50), interaction.depth = 1:3, 
                     shrinkage = c(.01, .1))
 gbm_m = train(x = train_tr_m, y = rating_tr,
-              method = 'gbm', preProcess = c('center', 'scale'),
-              metric = 'ROC', trControl = ctrl, tuneGrid = gbm_g, verbose = F)</code></pre>
+              method = 'gbm', metric = 'ROC', 
+              trControl = ctrl, tuneGrid = gbm_g, verbose = F)</code></pre>
 <pre><code>## Loading required package: gbm
 ## Loading required package: survival
 ## Loading required package: splines
@@ -449,7 +449,7 @@ gbm_m = train(x = train_tr_m, y = rating_tr,
 ##   15 predictor
 ##    2 classes: 'down', 'up' 
 ## 
-## Pre-processing: centered, scaled 
+## No pre-processing
 ## Resampling: Cross-Validated (10 fold) 
 ## 
 ## Summary of sample sizes: 3038, 3038, 3039, 3038, 3039, 3038, ... 
