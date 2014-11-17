@@ -168,8 +168,8 @@ set.seed(2014)
 gbm_g = expand.grid(n.trees = seq(100, 300, 50), interaction.depth = 1:3, 
                     shrinkage = c(.01, .1))
 gbm_m = train(x = train_tr_m, y = rating_tr,
-              method = 'gbm', preProcess = c('center', 'scale'),
-              metric = 'ROC', trControl = ctrl, tuneGrid = gbm_g, verbose = F)
+              method = 'gbm', metric = 'ROC', 
+              trControl = ctrl, tuneGrid = gbm_g, verbose = F)
 gbm_m
 
 resamps = resamples(list(logistic = logit_m, svm = svm_m, random_forest = rf_m, gbm = gbm_m))
